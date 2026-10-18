@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
     {
         //this ensures that the txt file path is always wherte the exe is
         private readonly string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "animals.txt");
+        List<Animal> animalList = new List<Animal>();
 
         public Form1()
         {
@@ -44,8 +46,7 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
         //loads animals.txt into the DataGridView on startup
         public void LoadAnimalData()
         {
-            List<Animal> animalList = new List<Animal>();
-            int skippedLinesCount = 0;
+        int skippedLinesCount = 0;
 
             try
             {
@@ -85,7 +86,7 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
                     string housing = parts[6].Trim();
 
                     //add valid animal record to the list
-                    animalList.Add(new Animal(id, name, species, age, score, status, housing));
+                    animalList.Add(new Animal(id, name, species, age, score));
                 }
 
                 //notify the user if and how many lines were skipped
@@ -107,6 +108,86 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
             catch (Exception ex)
             {
                 MessageBox.Show($"An unexpected error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void AddAnimalForm_Click(object sender, EventArgs e)
+        {
+            AddAnimal addAnimal = new AddAnimal();
+            addAnimal.ShowDialog();
+            LoadAnimalData();
+
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            DeleteAnimal delete = new DeleteAnimal();
+            delete.ShowDialog();
+            LoadAnimalData();
+        }
+
+        private void btnSummary_Click(object sender, EventArgs e)
+        {
+            string summaryFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Summary.txt");
+            DateTime dt = DateTime.Now;
+            int[] statusArray = { 0, 0, 0, 0, 0 };
+            int total = animalList.Count;
+            int combinedAge = 0, combinedRecovery = 0;
+            double avgAge, avgRecovery;
+
+
+            animalList.Clear();
+            LoadAnimalData();
+
+            using(StreamWriter writer = new StreamWriter(summaryFile))
+            {
+                writer.WriteLine("BAOBAB RIDGE WILDLIFE REHABILITATION CENTRE");
+                writer.WriteLine("ANIMAL SUMMARY REPORT");
+                writer.WriteLine($"Generated: {dt:yyyy-MM-dd HH:mm}");
+                writer.WriteLine("---------------------------------------------");
+                writer.WriteLine($"{"Total animals:",-25}{total}");
+                if(total > 0)
+                {
+                    foreach (Animal animal in animalList)
+                    {
+                        combinedAge += animal.Age;
+                        combinedRecovery += animal.RecoveryScore;
+                        switch (animal.Status)
+                        {
+                            case "Critical":
+                                statusArray[0]++;
+                                break;
+                            case "Serious":
+                                statusArray[1]++;
+                                break;
+                            case "Stable":
+                                statusArray[2]++;
+                                break;
+                            case "Recovering":
+                                statusArray[3]++;
+                                break;
+                            case "Release-Ready":
+                                statusArray[4]++;
+                                break;
+                        }
+                    }
+                    avgAge = combinedAge / total;
+                    avgRecovery = combinedRecovery / total;
+                    string formattedAvgAge = avgAge.ToString("F2", CultureInfo.InvariantCulture);//Makes sure decimal is '.' instead ','
+                    string formattedAvgRecovery = avgRecovery.ToString("F2", CultureInfo.InvariantCulture);
+
+                    writer.WriteLine($"{"Average age (years):",-25}{formattedAvgAge}");
+                    writer.WriteLine($"{"Average recovery score:",-25}{formattedAvgRecovery}");
+                }
+                
+                writer.WriteLine("---------------------------------------------");
+                writer.WriteLine("Animals per Status");
+                writer.WriteLine($"{"  Critical:",-25}{statusArray[0]}");
+                writer.WriteLine($"{"  Serious:",-25}{statusArray[1]}");
+                writer.WriteLine($"{"  Stable:",-25}{statusArray[2]}");
+                writer.WriteLine($"{"  Recovering:",-25}{statusArray[3]}");
+                writer.WriteLine($"{"  Release-Ready:",-25}{statusArray[4]}");
+                writer.WriteLine("---------------------------------------------");
             }
         }
     }
