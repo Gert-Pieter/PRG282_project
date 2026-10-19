@@ -39,6 +39,12 @@
             this.RecoveryScoreRange = new System.Windows.Forms.NumericUpDown();
             this.AddAnimalBtn = new System.Windows.Forms.Button();
             this.animalAge = new System.Windows.Forms.NumericUpDown();
+            this.lblMode = new System.Windows.Forms.Label();
+            this.lblSearchId = new System.Windows.Forms.Label();
+            this.txtSearchId = new System.Windows.Forms.TextBox();
+            this.btnSearch = new System.Windows.Forms.Button();
+            this.btnSaveChanges = new System.Windows.Forms.Button();
+            this.btnClear = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.RecoveryScoreRange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.animalAge)).BeginInit();
             this.SuspendLayout();
@@ -135,11 +141,73 @@
             this.animalAge.Size = new System.Drawing.Size(120, 22);
             this.animalAge.TabIndex = 11;
             // 
+            // lblMode
+            // 
+            this.lblMode.AutoSize = true;
+            this.lblMode.Location = new System.Drawing.Point(25, 10);
+            this.lblMode.Name = "lblMode";
+            this.lblMode.Size = new System.Drawing.Size(140, 16);
+            this.lblMode.TabIndex = 12;
+            this.lblMode.Text = "Mode: Add new animal";
+            // 
+            // lblSearchId
+            // 
+            this.lblSearchId.AutoSize = true;
+            this.lblSearchId.Location = new System.Drawing.Point(340, 41);
+            this.lblSearchId.Name = "lblSearchId";
+            this.lblSearchId.Size = new System.Drawing.Size(116, 16);
+            this.lblSearchId.TabIndex = 13;
+            this.lblSearchId.Text = "Search Animal ID";
+            // 
+            // txtSearchId
+            // 
+            this.txtSearchId.Location = new System.Drawing.Point(470, 38);
+            this.txtSearchId.Name = "txtSearchId";
+            this.txtSearchId.Size = new System.Drawing.Size(142, 22);
+            this.txtSearchId.TabIndex = 14;
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Location = new System.Drawing.Point(630, 36);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(100, 26);
+            this.btnSearch.TabIndex = 15;
+            this.btnSearch.Text = "Search";
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            // 
+            // btnSaveChanges
+            // 
+            this.btnSaveChanges.Enabled = false;
+            this.btnSaveChanges.Location = new System.Drawing.Point(185, 185);
+            this.btnSaveChanges.Name = "btnSaveChanges";
+            this.btnSaveChanges.Size = new System.Drawing.Size(142, 23);
+            this.btnSaveChanges.TabIndex = 16;
+            this.btnSaveChanges.Text = "Save Changes";
+            this.btnSaveChanges.UseVisualStyleBackColor = true;
+            this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
+            // 
+            // btnClear
+            // 
+            this.btnClear.Location = new System.Drawing.Point(342, 185);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(142, 23);
+            this.btnClear.TabIndex = 17;
+            this.btnClear.Text = "Clear";
+            this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
             // AddAnimal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnClear);
+            this.Controls.Add(this.btnSaveChanges);
+            this.Controls.Add(this.btnSearch);
+            this.Controls.Add(this.txtSearchId);
+            this.Controls.Add(this.lblSearchId);
+            this.Controls.Add(this.lblMode);
             this.Controls.Add(this.animalAge);
             this.Controls.Add(this.AddAnimalBtn);
             this.Controls.Add(this.RecoveryScoreRange);
@@ -152,7 +220,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "AddAnimal";
-            this.Text = "AddAnimal";
+            this.Text = "Add / Update Animal";
             ((System.ComponentModel.ISupportInitialize)(this.RecoveryScoreRange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.animalAge)).EndInit();
             this.ResumeLayout(false);
@@ -173,5 +241,11 @@
         private System.Windows.Forms.NumericUpDown RecoveryScoreRange;
         private System.Windows.Forms.Button AddAnimalBtn;
         private System.Windows.Forms.NumericUpDown animalAge;
+        private System.Windows.Forms.Label lblMode;
+        private System.Windows.Forms.Label lblSearchId;
+        private System.Windows.Forms.TextBox txtSearchId;
+        private System.Windows.Forms.Button btnSearch;
+        private System.Windows.Forms.Button btnSaveChanges;
+        private System.Windows.Forms.Button btnClear;
     }
 }

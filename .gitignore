@@ -20,3 +20,6 @@ bld/
 
 # Visual Studio cache directories
 .vs/
+# Generated at runtime, not committed
+summary.txt
+Summary.txt

@@ -30,7 +30,7 @@
         {
             this.dgvAnimals = new System.Windows.Forms.DataGridView();
             this.AddAnimalForm = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnUpdate = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnSummary = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAnimals)).BeginInit();
@@ -45,6 +45,7 @@
             this.dgvAnimals.RowTemplate.Height = 24;
             this.dgvAnimals.Size = new System.Drawing.Size(1233, 150);
             this.dgvAnimals.TabIndex = 0;
+            this.dgvAnimals.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAnimals_CellClick);
             // 
             // AddAnimalForm
             // 
@@ -56,14 +57,15 @@
             this.AddAnimalForm.UseVisualStyleBackColor = true;
             this.AddAnimalForm.Click += new System.EventHandler(this.AddAnimalForm_Click);
             // 
-            // button2
+            // btnUpdate
             // 
-            this.button2.Location = new System.Drawing.Point(158, 181);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(127, 33);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btnUpdate.Location = new System.Drawing.Point(158, 181);
+            this.btnUpdate.Name = "btnUpdate";
+            this.btnUpdate.Size = new System.Drawing.Size(127, 33);
+            this.btnUpdate.TabIndex = 2;
+            this.btnUpdate.Text = "Update an Animal";
+            this.btnUpdate.Click += new System.EventHandler(this.btnUpdate_Click);
+            this.btnUpdate.UseVisualStyleBackColor = true;
             // 
             // btnDelete
             // 
@@ -90,7 +92,7 @@
             this.ClientSize = new System.Drawing.Size(1257, 465);
             this.Controls.Add(this.btnSummary);
             this.Controls.Add(this.btnDelete);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.btnUpdate);
             this.Controls.Add(this.AddAnimalForm);
             this.Controls.Add(this.dgvAnimals);
             this.Name = "Form1";
@@ -103,7 +105,7 @@
 
         private System.Windows.Forms.DataGridView dgvAnimals;
         private System.Windows.Forms.Button AddAnimalForm;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnUpdate;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnSummary;
     }
