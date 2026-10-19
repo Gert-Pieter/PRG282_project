@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Baobab_Ridge_Wildlife_Rehabilitation_Records_System.DataLayer;
 
 namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
 {
@@ -15,6 +17,7 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
     {
         //this ensures that the txt file path is always wherte the exe is
         private readonly string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "animals.txt");
+        List<Animal> animalList = new List<Animal>();
 
         public Form1()
         {
@@ -41,11 +44,13 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
             dgvAnimals.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "HousingUnit", HeaderText = "Housing Unit" });
         }
 
-        //loads animals.txt into the DataGridView on startup
+        //loads animals.txt into the DataGridView; called on startup and after every add, update and delete
         public void LoadAnimalData()
         {
-        List<Animal> animalList = new List<Animal>();
-        int skippedLinesCount = 0;
+            int skippedLinesCount = 0;
+
+            //start from an empty list each time so a refresh never shows duplicate rows
+            animalList.Clear();
 
             try
             {
@@ -61,31 +66,16 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
                 {
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
-                    string[] parts = line.Split('|');
-
-                    //check if it has all 7 fields
-                    if (parts.Length != 7)
+                    //ParseLine returns null for a wrong field count, a bad ID, or a non-numeric/out-of-range age or score
+                    Animal animal = DataHandler.ParseLine(line);
+                    if (animal == null)
                     {
                         skippedLinesCount++;
                         continue;
                     }
-
-                    string id = parts[0].Trim();
-                    string name = parts[1].Trim();
-                    string species = parts[2].Trim();
-
-                    //validate that Age and Recovery Score are valid whole numbers between 0 and 100
-                    if (!int.TryParse(parts[3].Trim(), out int age) || age < 0 || age > 100 || !int.TryParse(parts[4].Trim(), out int score) || score < 0 || score > 100)
-                    {
-                        skippedLinesCount++;
-                        continue;
-                    }
-
-                    string status = parts[5].Trim();
-                    string housing = parts[6].Trim();
 
                     //add valid animal record to the list
-                    animalList.Add(new Animal(id, name, species, age, score));
+                    animalList.Add(animal);
                 }
 
                 //notify the user if and how many lines were skipped
@@ -93,8 +83,6 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
                 {
                     MessageBox.Show($"File load complete. {skippedLinesCount} malformed line(s) were skipped.", "Data Load Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
-
-                dgvAnimals.DataSource = animalList;
             }
             catch (UnauthorizedAccessException)
             {
@@ -108,15 +96,117 @@ namespace Baobab_Ridge_Wildlife_Rehabilitation_Records_System
             {
                 MessageBox.Show($"An unexpected error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            //re-binding is needed because a plain List does not tell the grid that its contents changed
+            dgvAnimals.DataSource = null;
+            dgvAnimals.DataSource = animalList;
         }
 
+        //opens the Add / Update form; if an ID is given, that record is loaded straight into edit mode
+        private void OpenAnimalForm(string animalIdToEdit)
+        {
+            AddAnimal animalForm = string.IsNullOrEmpty(animalIdToEdit) ? new AddAnimal() : new AddAnimal(animalIdToEdit);
+
+            //refresh the grid as soon as a record is added or saved, not only when the form closes
+            animalForm.AnimalsChanged += (s, args) => LoadAnimalData();
+            animalForm.ShowDialog();
+            LoadAnimalData();
+        }
+
+        //opens the Add / Update form in Add mode
         private void AddAnimalForm_Click(object sender, EventArgs e)
         {
-            AddAnimal addAnimal = new AddAnimal();
-            addAnimal.ShowDialog();
+            OpenAnimalForm(null);
+        }
 
+        //clicking a row loads that animal into the Add / Update form in edit mode
+        private void dgvAnimals_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            //RowIndex is -1 when the column header is clicked
+            if (e.RowIndex < 0) return;
+
+            if (dgvAnimals.Rows[e.RowIndex].DataBoundItem is Animal selected)
+            {
+                OpenAnimalForm(selected.AnimalID);
+            }
+        }
+
+        //opens the Add / Update form empty, so the user can type an Animal ID and click Search
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            OpenAnimalForm(null);
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            DeleteAnimal delete = new DeleteAnimal();
+            delete.ShowDialog();
+            LoadAnimalData();
+        }
+
+        private void btnSummary_Click(object sender, EventArgs e)
+        {
+            string summaryFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Summary.txt");
+            DateTime dt = DateTime.Now;
+            int[] statusArray = { 0, 0, 0, 0, 0 };
+            int total = animalList.Count;
+            int combinedAge = 0, combinedRecovery = 0;
+            double avgAge, avgRecovery;
+
+
+            animalList.Clear();
             LoadAnimalData();
 
+            using(StreamWriter writer = new StreamWriter(summaryFile))
+            {
+                writer.WriteLine("BAOBAB RIDGE WILDLIFE REHABILITATION CENTRE");
+                writer.WriteLine("ANIMAL SUMMARY REPORT");
+                writer.WriteLine($"Generated: {dt:yyyy-MM-dd HH:mm}");
+                writer.WriteLine("---------------------------------------------");
+                writer.WriteLine($"{"Total animals:",-25}{total}");
+                if(total > 0)
+                {
+                    foreach (Animal animal in animalList)
+                    {
+                        combinedAge += animal.Age;
+                        combinedRecovery += animal.RecoveryScore;
+                        switch (animal.Status)
+                        {
+                            case "Critical":
+                                statusArray[0]++;
+                                break;
+                            case "Serious":
+                                statusArray[1]++;
+                                break;
+                            case "Stable":
+                                statusArray[2]++;
+                                break;
+                            case "Recovering":
+                                statusArray[3]++;
+                                break;
+                            case "Release-Ready":
+                                statusArray[4]++;
+                                break;
+                        }
+                    }
+                    avgAge = combinedAge / total;
+                    avgRecovery = combinedRecovery / total;
+                    string formattedAvgAge = avgAge.ToString("F2", CultureInfo.InvariantCulture);//Makes sure decimal is '.' instead ','
+                    string formattedAvgRecovery = avgRecovery.ToString("F2", CultureInfo.InvariantCulture);
+
+                    writer.WriteLine($"{"Average age (years):",-25}{formattedAvgAge}");
+                    writer.WriteLine($"{"Average recovery score:",-25}{formattedAvgRecovery}");
+                }
+                
+                writer.WriteLine("---------------------------------------------");
+                writer.WriteLine("Animals per Status");
+                writer.WriteLine($"{"  Critical:",-25}{statusArray[0]}");
+                writer.WriteLine($"{"  Serious:",-25}{statusArray[1]}");
+                writer.WriteLine($"{"  Stable:",-25}{statusArray[2]}");
+                writer.WriteLine($"{"  Recovering:",-25}{statusArray[3]}");
+                writer.WriteLine($"{"  Release-Ready:",-25}{statusArray[4]}");
+                writer.WriteLine("---------------------------------------------");
+            }
         }
     }
 }
